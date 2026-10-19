@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NONSTOP TEAM | Attendance Dashboard</title>
+<style>
+:root{--bg:#f3f5f9;--card:#fff;--text:#172033;--muted:#64748b;--accent:#176b45;--line:#e2e8f0}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,"Noto Sans Tamil",sans-serif;background:var(--bg);color:var(--text)}
+header{background:#123f2c;color:white;padding:22px 16px}
+header h1{font-size:22px;margin:0 0 7px}
+header p{margin:0;color:#d5e9dc;font-size:13px}
+main{max-width:900px;margin:auto;padding:16px}
+.notice{background:#fff7dd;border:1px solid #f1d58a;padding:12px;border-radius:10px;font-size:13px;line-height:1.6;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:16px;min-width:0}
+.label{color:var(--muted);font-size:13px}
+.value{font-size:28px;font-weight:700;margin-top:10px}
+.section{margin-top:22px}
+h2{font-size:18px;margin:0 0 12px}
+input,select,button{font:inherit}
+input,select{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:8px;background:white;margin-top:6px}
+button{background:var(--accent);color:white;border:0;border-radius:8px;padding:11px 14px;cursor:pointer;font-weight:600}
+.secondary{background:#e8eef0;color:#172033}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tablewrap{overflow-x:auto;background:white;border-radius:10px;border:1px solid var(--line)}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:460px}
+th,td{padding:12px;text-align:left;border-bottom:1px solid var(--line)}
+th{background:#edf4ef}
+.empty{color:var(--muted);padding:16px;font-size:14px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:24px}
+@media(min-width:650px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<header>
+<h1>NONSTOP TEAM</h1>
+<p>Vestige Attendance & Performance Dashboard</p>
+</header>
+<main>
+<div class="notice"><strong>Demo Mode:</strong> இப்போது காட்டப்படும் எண்கள் Sample Data. உண்மையான Team பதிவுகள் அல்லது WhatsApp Automation இணைக்கப்படவில்லை.</div>
+<div class="grid">
+<div class="card"><div class="label">Total Members</div><div class="value" id="total">0</div></div>
+<div class="card"><div class="label">I JOIN Present</div><div class="value" id="ij">0</div></div>
+<div class="card"><div class="label">Feedback Present</div><div class="value" id="fb">0</div></div>
+<div class="card"><div class="label">100+ PV Members</div><div class="value" id="pvcount">0</div></div>
+</div>
+<section class="section card">
+<h2>Member Attendance பதிவு</h2>
+<form id="memberForm">
+<div class="row">
+<label>Member Name<input id="name" required placeholder="உறுப்பினர் பெயர்"></label>
+<label>Leader Name<input id="leader" required placeholder="Leader பெயர்"></label>
+</div>
+<div class="row">
+<label>I JOIN
+<select id="join"><option value="yes">Present</option><option value="no">Absent</option></select></label>
+<label>Meeting Feedback
+<select id="feedback"><option value="yes">Present</option><option value="no">Absent</option></select></label>
+</div>
+<label>PV
+<input id="pv" type="number" min="0" value="0" required></label>
+<div class="actions"><button type="submit">Add Member</button><button class="secondary" type="button" id="export">Export CSV</button></div>
+</form>
+</section>
+<section class="section">
+<h2>Member Report</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>Member</th><th>Leader</th><th>I JOIN</th><th>Feedback</th><th>PV</th></tr></thead>
+<tbody id="rows"><tr><td colspan="5" class="empty">இன்னும் Member பதிவுகள் இல்லை.</td></tr></tbody>
+</table></div>
+</section>
+<section class="section card">
+<h2>Leader-wise Summary</h2>
+<div id="leaders" class="empty">Member பதிவுகள் சேர்க்கும்போது இங்கே Summary தோன்றும்.</div>
+</section>
+<div class="actions"><button class="secondary" id="clear" type="button">Clear All Demo Data</button></div>
+</main>
+<footer>NONSTOP TEAM · Initial Dashboard · Demo data is stored only in this browser session.</footer>
+<script>
+const members=[];
+const $=id=>document.getElementById(id);
+function render(){
+$("total").textContent=members.length;
+$("ij").textContent=members.filter(m=>m.join==="yes").length;
+$("fb").textContent=members.filter(m=>m.feedback==="yes").length;
+$("pvcount").textContent=members.filter(m=>m.pv>=100).length;
+const tbody=$("rows");
+tbody.replaceChildren();
+if(!members.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=5;td.className="empty";td.textContent="இன்னும் Member பதிவுகள் இல்லை.";tr.append(td);tbody.append(tr)}
+members.forEach(m=>{const tr=document.createElement("tr");[m.name,m.leader,m.join==="yes"?"Present":"Absent",m.feedback==="yes"?"Present":"Absent",m.pv].forEach(v=>{const td=document.createElement("td");td.textContent=v;tr.append(td)});tbody.append(tr)});
+const groups={};
+members.forEach(m=>{if(!groups[m.leader])groups[m.leader]={total:0,join:0,fb:0,pv:0};const g=groups[m.leader];g.total++;if(m.join==="yes")g.join++;if(m.feedback==="yes")g.fb++;g.pv+=m.pv});
+const box=$("leaders");box.replaceChildren();
+if(!Object.keys(groups).length){box.textContent="Member பதிவுகள் சேர்க்கும்போது இங்கே Summary தோன்றும்.";box.className="empty";return}
+box.className="";
+Object.entries(groups).forEach(([name,g])=>{const p=document.createElement("p");p.textContent=name+" — Members: "+g.total+" | IJ: "+g.join+" | FB: "+g.fb+" | PV: "+g.pv;box.append(p)});
+}
+$("memberForm").addEventListener("submit",e=>{e.preventDefault();members.push({name:$("name").value.trim(),leader:$("leader").value.trim(),join:$("join").value,feedback:$("feedback").value,pv:Number($("pv").value)});render();e.target.reset();$("pv").value=0});
+$("export").addEventListener("click",()=>{if(!members.length){alert("முதலில் Member பதிவுகளைச் சேர்க்கவும்.");return}const q=v=>'"'+String(v).replace(/"/g,'""')+'"';const csv=["Member,Leader,I JOIN,Feedback,PV",...members.map(m=>[m.name,m.leader,m.join,m.feedback,m.pv].map(q).join(","))].join("\r\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"}));a.download="vestige-attendance.csv";a.click();URL.revokeObjectURL(a.href)});
+$("clear").addEventListener("click",()=>{if(confirm("இந்த Browser Session-ல் உள்ள எல்லா Demo பதிவுகளையும் நீக்கவா?")){members.length=0;render()}});
+render();
+</script>
+</body>
+</html>
