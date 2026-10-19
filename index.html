@@ -98,9 +98,29 @@ if(!Object.keys(groups).length){box.textContent="Member பதிவுகள்
 box.className="";
 Object.entries(groups).forEach(([name,g])=>{const p=document.createElement("p");p.textContent=name+" — Members: "+g.total+" | IJ: "+g.join+" | FB: "+g.fb+" | PV: "+g.pv;box.append(p)});
 }
-$("memberForm").addEventListener("submit",e=>{e.preventDefault();members.push({name:$("name").value.trim(),leader:$("leader").value.trim(),join:$("join").value,feedback:$("feedback").value,pv:Number($("pv").value)});render();e.target.reset();$("pv").value=0});
-$("export").addEventListener("click",()=>{if(!members.length){alert("முதலில் Member பதிவுகளைச் சேர்க்கவும்.");return}const q=v=>'"'+String(v).replace(/"/g,'""')+'"';const csv=["Member,Leader,I JOIN,Feedback,PV",...members.map(m=>[m.name,m.leader,m.join,m.feedback,m.pv].map(q).join(","))].join("\r\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"}));a.download="vestige-attendance.csv";a.click();URL.revokeObjectURL(a.href)});
-$("clear").addEventListener("click",()=>{if(confirm("இந்த Browser Session-ல் உள்ள எல்லா Demo பதிவுகளையும் நீக்கவா?")){members.length=0;render()}});
+$("memberForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const name = $("name").value.trim();
+  const leader = $("leader").value.trim();
+  const duplicate = members.some(m => m.name.toLowerCase() === name.toLowerCase() && m.leader.toLowerCase() === leader.toLowerCase());
+  if (duplicate) { alert("இந்த Member ஏற்கனவே பதிவு செய்யப்பட்டுள்ளார்!"); return; }
+  members.push({ name, leader, join: $("join").value, feedback: $("feedback").value, pv: Number($("pv").value) });
+  saveMembers(); render(); e.target.reset(); $("pv").value = 0;
+});
+
+$("export").addEventListener("click", () => {
+  if (!members.length) { alert("முதலில் Member பதிவுகளைச் சேர்க்கவும்."); return; }
+  const q = v => '"' + String(v).replace(/"/g, '""') + '"';
+  const csv = ["Member,Leader,I JOIN,Feedback,PV", ...members.map(m => [m.name,m.leader,m.join,m.feedback,m.pv].map(q).join(","))].join("\r\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["\uFEFF" + csv], {type:"text/csv;charset=utf-8;"})); a.download = "vestige-attendance.csv"; a.click(); URL.revokeObjectURL(a.href);
+});
+$("clear").addEventListener("click", () => {
+  if (confirm("எல்லா Demo பதிவுகளையும் நீக்கவா?")) {
+    members.length = 0;
+    saveMembers();
+    render();
+  }
+});
 render();
 </script>
 </body>
